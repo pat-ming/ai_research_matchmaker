@@ -1,0 +1,38 @@
+# Credentials & Secrets
+api_keys.json
+*.env
+.env*
+
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Python cache & build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Test cache
+.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PDFs (can be re-downloaded)
+*.pdf
+
+# Generated output & scraped data
+pdf_compiler/neural_ode/
+old data/
+wustlprof_data_harvest/cse_research_areas.json
