@@ -184,4 +184,4 @@ def main(name, filename_prefix=None):
     formatted_name = filename_prefix if filename_prefix else name_lower.replace(" ", "_")
     faculty_df.to_csv(f'/Users/patrickming/Desktop/Coding Projects/AI Research Assistant/pdf_compiler/faculty_papers/{formatted_name}_papers.csv')
 
-main('Chenfeng Ke')
+main('Richard Mabbs')
