@@ -28,10 +28,11 @@ body {
 
 /* Flowy gradient blobs */
 .gradient-blob {
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
   filter: blur(80px);
   pointer-events: none;
+  z-index: 0;
 }
 
 .blob-1 {
@@ -62,6 +63,24 @@ body {
   animation: blobFloat3 18s ease-in-out infinite;
 }
 
+.blob-4 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(136, 19, 55, 0.10) 0%, rgba(136, 19, 55, 0.03) 50%, transparent 70%);
+  bottom: 10%;
+  right: 5%;
+  animation: blobFloat2 22s ease-in-out infinite reverse;
+}
+
+.blob-5 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(159, 18, 57, 0.09) 0%, rgba(159, 18, 57, 0.025) 50%, transparent 70%);
+  top: 60%;
+  left: 20%;
+  animation: blobFloat1 24s ease-in-out infinite reverse;
+}
+
 .dark .blob-1 {
   background: radial-gradient(circle, rgba(225, 29, 72, 0.08) 0%, rgba(225, 29, 72, 0.02) 50%, transparent 70%);
 }
@@ -70,6 +89,12 @@ body {
 }
 .dark .blob-3 {
   background: radial-gradient(circle, rgba(225, 29, 72, 0.05) 0%, rgba(225, 29, 72, 0.01) 50%, transparent 70%);
+}
+.dark .blob-4 {
+  background: radial-gradient(circle, rgba(225, 29, 72, 0.06) 0%, rgba(225, 29, 72, 0.015) 50%, transparent 70%);
+}
+.dark .blob-5 {
+  background: radial-gradient(circle, rgba(190, 18, 60, 0.05) 0%, rgba(190, 18, 60, 0.012) 50%, transparent 70%);
 }
 
 @keyframes blobFloat1 {
@@ -89,9 +114,10 @@ body {
 
 /* Flowy outline rings */
 .flowy-ring {
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
   pointer-events: none;
+  z-index: 0;
 }
 
 .ring-1 {
@@ -119,9 +145,37 @@ body {
   animation: ringDrift3 22s ease-in-out infinite;
 }
 
+.ring-4 {
+  width: 550px;
+  height: 550px;
+  bottom: 5%;
+  right: -8%;
+  border: 1px solid rgba(136, 19, 55, 0.05);
+  animation: ringDrift2 28s ease-in-out infinite reverse;
+}
+.ring-5 {
+  width: 400px;
+  height: 400px;
+  top: 50%;
+  left: 10%;
+  border: 1px solid rgba(159, 18, 57, 0.04);
+  animation: ringDrift3 26s ease-in-out infinite reverse;
+}
+.ring-6 {
+  width: 250px;
+  height: 250px;
+  top: 10%;
+  left: 30%;
+  border: 1px solid rgba(136, 19, 55, 0.03);
+  animation: ringDrift1 20s ease-in-out infinite reverse;
+}
+
 .dark .ring-1 { border-color: rgba(225, 29, 72, 0.06); }
 .dark .ring-2 { border-color: rgba(190, 18, 60, 0.05); }
 .dark .ring-3 { border-color: rgba(225, 29, 72, 0.04); }
+.dark .ring-4 { border-color: rgba(225, 29, 72, 0.04); }
+.dark .ring-5 { border-color: rgba(190, 18, 60, 0.035); }
+.dark .ring-6 { border-color: rgba(225, 29, 72, 0.03); }
 
 @keyframes ringDrift1 {
   0%, 100% { transform: translate(0, 0) rotate(0deg); }

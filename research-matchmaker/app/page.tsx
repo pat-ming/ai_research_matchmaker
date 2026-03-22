@@ -121,17 +121,22 @@ export default function Home() {
   };
 
   return (
-    <main className="relative min-h-screen flex items-center justify-center px-4 py-16 transition-colors duration-500 overflow-hidden">
+    <main className="relative min-h-screen flex flex-col items-center px-4 py-16 transition-colors duration-500 overflow-hidden">
 
       {/* Floating gradient blobs */}
       <div className="gradient-blob blob-1" />
       <div className="gradient-blob blob-2" />
       <div className="gradient-blob blob-3" />
+      <div className="gradient-blob blob-4" />
+      <div className="gradient-blob blob-5" />
 
       {/* Flowy outline rings */}
       <div className="flowy-ring ring-1" />
       <div className="flowy-ring ring-2" />
       <div className="flowy-ring ring-3" />
+      <div className="flowy-ring ring-4" />
+      <div className="flowy-ring ring-5" />
+      <div className="flowy-ring ring-6" />
 
       {/* Dark mode toggle */}
       <button
@@ -333,7 +338,7 @@ export default function Home() {
 
       {/* ── Results (wider container) ─────────────────────────────────────── */}
       {!loading && hasSearched && results.length > 0 && (
-        <div className="relative z-10 w-full px-3 mt-8 space-y-4 animate-fade-in-up">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-3 mt-8 space-y-4 animate-fade-in-up">
           <h2 className="text-2xl font-bold text-rose-900 dark:text-rose-400 mb-2">
             Your Top Faculty Matches
           </h2>
@@ -344,7 +349,7 @@ export default function Home() {
           {results.map((fac) => (
             <div
               key={fac.rank}
-              className="bg-white/80 dark:bg-gray-800/50 backdrop-blur-xl rounded-2xl shadow-lg border border-rose-900/8 dark:border-rose-400/10 p-6 sm:p-8 transition-all duration-300 hover:shadow-xl"
+              className="bg-white dark:bg-gray-800 backdrop-blur-xl rounded-2xl shadow-lg border border-rose-900/8 dark:border-rose-400/10 p-6 sm:p-8 transition-all duration-300 hover:shadow-xl"
             >
               {/* Faculty header */}
               <div className="flex items-start justify-between gap-4 mb-4">
@@ -422,7 +427,7 @@ export default function Home() {
                       {fac.papers.map((paper, idx) => (
                         <div
                           key={idx}
-                          className="flex items-start gap-3 p-3 rounded-lg bg-gray-50/80 dark:bg-gray-700/20 border border-gray-100 dark:border-gray-700/40"
+                          className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100/60 dark:border-gray-700/30"
                         >
                           <div className="flex-shrink-0 w-14 text-center">
                             <div className="text-sm font-bold text-rose-900 dark:text-rose-400">
@@ -462,7 +467,7 @@ export default function Home() {
                       {fac.recent_papers.map((paper, idx) => (
                         <div
                           key={idx}
-                          className="flex items-start gap-3 p-3 rounded-lg bg-gray-50/80 dark:bg-gray-700/20 border border-gray-100 dark:border-gray-700/40"
+                          className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100/60 dark:border-gray-700/30"
                         >
                           <div className="flex-shrink-0 w-14 text-center">
                             <div className="text-sm font-bold text-rose-900 dark:text-rose-400">
