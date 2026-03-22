@@ -8,13 +8,15 @@ import warnings
 
 warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
+cse = "https://cse.washu.edu/index.html"
+eece = "https://eece.washu.edu/index.html"
 
 def get_cse_research_areas(playwright: Playwright):
     browser = playwright.chromium.launch()
     page = browser.new_page()
 
     # Navigate to the CSE homepage
-    page.goto("https://cse.washu.edu/index.html")
+    page.goto("https://eece.washu.edu/index.html")
 
     # Find all research area links from the nav menu
     research_links = page.query_selector_all('a[href*="research-areas/"]')

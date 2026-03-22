@@ -2,7 +2,7 @@
 
 ## Context
 
-The project scrapes WashU CSE faculty profiles (63 faculty, 11 research areas), fetches publications via ORCID/OpenAlex, and extracts structured data from PDFs. The vector embedding pipeline (Pinecone + OpenAI) is WIP but relies on paid APIs.
+The project scrapes WashU STEM faculty profiles (~1,584 faculty across Arts & Sciences, McKelvey Engineering, and School of Medicine), fetches publications via ORCID/OpenAlex, and extracts structured data from PDFs. The vector embedding pipeline (Pinecone + OpenAI) is WIP but relies on paid APIs.
 
 **Goals:**
 1. Add **RAG Q&A** and **Faculty-Research Matching** without paid APIs
@@ -14,7 +14,7 @@ The project scrapes WashU CSE faculty profiles (63 faculty, 11 research areas), 
 
 ### What We're Replacing
 - **OpenAI API** → **Ollama** (local) and/or **Groq** (free cloud) — swappable
-- **Pinecone** → **ChromaDB** (local vector DB, $0)
+- **Pinecone** → **Qdrant** (local vector DB with named vectors, $0)
 
 ### What We're Keeping
 - **BGE-M3** embeddings (`embeddings/test.py`) — top-tier, runs on MPS
@@ -39,7 +39,7 @@ The project scrapes WashU CSE faculty profiles (63 faculty, 11 research areas), 
            │           │         │
      ┌─────▼───────────▼─────────▼─────┐
      │       EmbeddingPipeline          │
-     │   BGE-M3 + ChromaDB (vectors)   │
+     │    BGE-M3 + Qdrant (vectors)     │
      └─────────────┬───────────────────┘
                    │
      ┌─────────────▼───────────────────┐
@@ -55,7 +55,7 @@ The project scrapes WashU CSE faculty profiles (63 faculty, 11 research areas), 
 
 **Two databases, each doing what it's best at:**
 - **SQLite** — structured queries: "list all CS faculty," filter by department, sort by citations, faculty profiles
-- **ChromaDB** — semantic search: "who works on topics similar to autonomous vehicles?"
+- **Qdrant** — semantic search with named vectors (research, research_interests, bio per faculty): "who works on topics similar to autonomous vehicles?"
 
 ---
 
@@ -148,38 +148,22 @@ brew install ollama && ollama pull llama3.2:3b
 - Sign up at console.groq.com (free tier: ~30 req/min)
 - Add `groq_api_key` to `api_keys.json`
 
-### Step 3: Embedding Pipeline + ChromaDB
+### Step 3: Embedding Pipeline + Qdrant
 
-**File:** `embeddings/embed_pipeline.py` (new)
+**File:** `embeddings/embed_pipeline.py` (new — already created)
 
-Extends `embeddings/test.py` into a full ingestion + search pipeline:
+Extends `embeddings/test.py` into a full ingestion + search pipeline using Qdrant with named vectors:
 
-```python
-class EmbeddingPipeline:
-    def __init__(self, db_path="./vector_db"):
-        self.model = BGEM3FlagModel("BAAI/bge-m3", device="mps")
-        self.client = chromadb.PersistentClient(path=db_path)
+- **3 named vectors per faculty point** (1024-dim, cosine): `research`, `research_interests`, `bio`
+- Vectors only included when source field is non-null (Qdrant skips missing vectors during queries)
+- Payload metadata: `name`, `school`, `department`, `profile_url`, `research_areas`
+- Deduplicates faculty across research areas by `(name, school)`, merging research areas
+- Single-vector search (`search()`) and multi-vector fusion search (`multi_vector_search()`)
+- Payload indices on `school` and `department` for filtered queries
 
-    def ingest_faculty(self, db):
-        """Read faculty from SQLite → embed research_summary + bio → store in ChromaDB"""
-        # ChromaDB metadata includes: faculty_id, name, department, school
+**Qdrant collection:** `faculty` — one point per unique professor with up to 3 named vectors + metadata payload.
 
-    def ingest_papers(self, db):
-        """Read papers from SQLite → embed title + abstract → store in ChromaDB"""
-        # ChromaDB metadata includes: paper_id, faculty_id, faculty_name, citations, date
-
-    def embed_text(self, text):
-        """Encode text using BGE-M3, return dense vector"""
-
-    def search(self, query, collection_name="faculty_profiles", n_results=5):
-        """Semantic search: embed query → ChromaDB similarity search → return results with metadata"""
-```
-
-**ChromaDB collections:**
-- `faculty_profiles` — research descriptions + bios (metadata links to SQLite faculty.id)
-- `paper_abstracts` — paper abstracts (metadata links to SQLite papers.id + faculty.id)
-
-**Data flow:** Scrapers → SQLite (structured storage) → ChromaDB (vector index). SQLite is the source of truth; ChromaDB is a search index that can be rebuilt anytime from SQLite.
+**Data flow:** JSON scrapers → `embed_pipeline.py ingest` → Qdrant (vectors + metadata on disk at `db/qdrant_data/`).
 
 ### Step 4: RAG Q&A System
 
@@ -193,7 +177,7 @@ class ResearchQA:
         self.db = db  # SQLite connection — to fetch full faculty/paper details
 
     def ask(self, question, n_context=5):
-        # 1. Semantic search: embed question → query ChromaDB
+        # 1. Semantic search: embed question → query Qdrant
         faculty_hits = self.pipeline.search(question, "faculty_profiles", n_context)
         paper_hits = self.pipeline.search(question, "paper_abstracts", n_context)
 
@@ -210,7 +194,7 @@ Answer with specific faculty names, paper titles, and details. Only use informat
         return self.llm.generate(prompt)
 ```
 
-The SQLite enrichment step is key — ChromaDB returns the matched text + metadata IDs, then we pull full details (all papers, department, profile URL, etc.) from SQLite to build a rich context for the LLM.
+The SQLite enrichment step is key — Qdrant returns the matched text + metadata IDs, then we pull full details (all papers, department, profile URL, etc.) from SQLite to build a rich context for the LLM.
 
 ### Step 5: Faculty-Research Matching
 
@@ -291,7 +275,7 @@ uvicorn web.app:app --reload
 
 ```python
 # Usage:
-# python main.py ingest              # Import data → SQLite + ChromaDB
+# python main.py ingest              # Import data → SQLite + Qdrant
 # python main.py search "query"      # Semantic search (CLI)
 # python main.py match "interests"   # Faculty matching (CLI)
 # python main.py ask "question"      # RAG Q&A (CLI)
@@ -305,13 +289,13 @@ uvicorn web.app:app --reload
 The architecture is ready for this. When you expand:
 
 1. **Add new scrapers** in `wustlprof_data_harvest/` for other departments (BME, Physics, Math, etc.) — they all write to the same SQLite `faculty` table with different `department` and `school` values
-2. **Re-run ingestion** (`python main.py ingest`) — rebuilds ChromaDB from SQLite
-3. **No code changes needed** in the RAG/matching/web layers — they query SQLite + ChromaDB generically
+2. **Re-run ingestion** (`python main.py ingest`) — rebuilds Qdrant from SQLite
+3. **No code changes needed** in the RAG/matching/web layers — they query SQLite + Qdrant generically
 
 **Scale estimates:**
 - All WashU STEM: ~500-1,000 faculty, ~20,000-50,000 papers
 - SQLite handles millions of rows easily
-- ChromaDB handles ~1M vectors without issue
+- Qdrant handles ~1M vectors without issue
 - BGE-M3 embedding speed: ~100 texts/sec on MPS
 
 The `data/arts_sci.py` and `data/mckelvey.py` placeholder files you already have are where future scrapers would go.
@@ -324,7 +308,7 @@ The `data/arts_sci.py` and `data/mckelvey.py` placeholder files you already have
 |------|--------|---------|
 | `db/database.py` | New | SQLite schema + CRUD operations |
 | `llm/llm_client.py` | New | Unified LLM interface (Ollama + Groq) |
-| `embeddings/embed_pipeline.py` | New | BGE-M3 + ChromaDB pipeline |
+| `embeddings/embed_pipeline.py` | New (done) | BGE-M3 + Qdrant pipeline with named vectors |
 | `rag/query_engine.py` | New | RAG Q&A system |
 | `rag/research_matcher.py` | New | Faculty-research matching |
 | `web/app.py` | New | FastAPI web server |
@@ -333,23 +317,23 @@ The `data/arts_sci.py` and `data/mckelvey.py` placeholder files you already have
 | `professor_vector_embedding.py` | Delete | Replaced by embeddings/embed_pipeline.py |
 | `requirements.txt` | New | Pin dependencies |
 
-**New dependencies:** `chromadb`, `groq`, `fastapi`, `uvicorn`, `ollama` (optional)
+**New dependencies:** `qdrant-client`, `groq`, `fastapi`, `uvicorn`, `ollama` (optional)
 
 ---
 
 ## Hardware Notes (8GB RAM)
 
 - **BGE-M3** ~2GB on MPS — works fine
-- **ChromaDB + SQLite** — lightweight, disk-based
+- **Qdrant + SQLite** — lightweight, disk-based (Qdrant embedded mode, no server)
 - **Groq** (recommended start) — zero local RAM cost, Llama 3.1 70B quality
 - **Ollama `llama3.2:3b`** (~2GB) — for offline use, tight but workable alongside BGE-M3
-- **Strategy:** Ingestion and querying are separate steps. During ingestion, only BGE-M3 is loaded. During Q&A, ChromaDB loads from disk and LLM handles generation.
+- **Strategy:** Ingestion and querying are separate steps. During ingestion, only BGE-M3 is loaded. During Q&A, Qdrant loads from disk and LLM handles generation.
 
 ---
 
 ## Verification
 
-1. `python main.py ingest` — imports existing JSON/CSV into SQLite, builds ChromaDB vectors
+1. `python main.py ingest` — imports existing JSON/CSV into SQLite, builds Qdrant vectors
 2. `python main.py search "machine learning"` — verify semantic search returns relevant faculty
 3. `python main.py match "deep learning for healthcare"` — verify matching returns ranked faculty
 4. `python main.py ask "Which professors work on cybersecurity?"` — test full RAG pipeline

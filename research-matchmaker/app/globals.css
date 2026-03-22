@@ -3,13 +3,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f8fafc;
-  --foreground: #171717;
+  --background: #faf8f9;
+  --foreground: #1a1017;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #0d0a0c;
+  --foreground: #ede8eb;
 }
 
 @theme inline {
@@ -23,20 +23,124 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
 }
 
-/* Smooth fade-in animation */
+/* Flowy gradient blobs */
+.gradient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.blob-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(136, 19, 55, 0.13) 0%, rgba(136, 19, 55, 0.04) 50%, transparent 70%);
+  top: -10%;
+  right: -10%;
+  animation: blobFloat1 20s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(159, 18, 57, 0.11) 0%, rgba(159, 18, 57, 0.03) 50%, transparent 70%);
+  bottom: -5%;
+  left: -8%;
+  animation: blobFloat2 25s ease-in-out infinite;
+}
+
+.blob-3 {
+  width: 400px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(190, 18, 60, 0.08) 0%, rgba(190, 18, 60, 0.02) 50%, transparent 70%);
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: blobFloat3 18s ease-in-out infinite;
+}
+
+.dark .blob-1 {
+  background: radial-gradient(circle, rgba(225, 29, 72, 0.08) 0%, rgba(225, 29, 72, 0.02) 50%, transparent 70%);
+}
+.dark .blob-2 {
+  background: radial-gradient(circle, rgba(190, 18, 60, 0.06) 0%, rgba(190, 18, 60, 0.015) 50%, transparent 70%);
+}
+.dark .blob-3 {
+  background: radial-gradient(circle, rgba(225, 29, 72, 0.05) 0%, rgba(225, 29, 72, 0.01) 50%, transparent 70%);
+}
+
+@keyframes blobFloat1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-30px, 20px) scale(1.05); }
+  66% { transform: translate(20px, -15px) scale(0.95); }
+}
+@keyframes blobFloat2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(25px, -20px) scale(1.08); }
+  66% { transform: translate(-15px, 25px) scale(0.97); }
+}
+@keyframes blobFloat3 {
+  0%, 100% { transform: translateX(-50%) translate(0, 0) scale(1); }
+  50% { transform: translateX(-50%) translate(15px, -20px) scale(1.1); }
+}
+
+/* Flowy outline rings */
+.flowy-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ring-1 {
+  width: 700px;
+  height: 700px;
+  top: -20%;
+  right: -20%;
+  border: 1.5px solid rgba(136, 19, 55, 0.07);
+  animation: ringDrift1 30s ease-in-out infinite;
+}
+.ring-2 {
+  width: 500px;
+  height: 500px;
+  bottom: -10%;
+  left: -12%;
+  border: 1.5px solid rgba(159, 18, 57, 0.05);
+  animation: ringDrift2 25s ease-in-out infinite;
+}
+.ring-3 {
+  width: 300px;
+  height: 300px;
+  top: 20%;
+  right: 5%;
+  border: 1px solid rgba(136, 19, 55, 0.04);
+  animation: ringDrift3 22s ease-in-out infinite;
+}
+
+.dark .ring-1 { border-color: rgba(225, 29, 72, 0.06); }
+.dark .ring-2 { border-color: rgba(190, 18, 60, 0.05); }
+.dark .ring-3 { border-color: rgba(225, 29, 72, 0.04); }
+
+@keyframes ringDrift1 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-20px, 15px) rotate(10deg); }
+}
+@keyframes ringDrift2 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(15px, -20px) rotate(-8deg); }
+}
+@keyframes ringDrift3 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  50% { transform: translate(-10px, 10px) rotate(15deg) scale(1.1); }
+}
+
+/* Fade-in animation */
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
 .animate-fade-in-up {
   animation: fadeInUp 0.4s ease-out forwards;
 }
