@@ -50,11 +50,14 @@ def scaled_vector(text):
     )
     return 0.75 * vector[0] + 0.25 * vector[1]
 
-ex = extract_core("I'm interested in applying machine learning to RNA sequencing and drug discovery.")
-print(ex.get('clean_string'))
-vector_ex = text_vec([ex.get("clean_string"), ex.get("original")])
-scaled_ex = 0.75 * vector_ex[0] + 0.25 * vector_ex[1]
+#ex = extract_core("I'm interested in applying machine learning to RNA sequencing and drug discovery.")
+#print(ex.get('clean_string'))
+#vector_ex = text_vec([ex.get("clean_string"), ex.get("original")])
+#scaled_ex = 0.75 * vector_ex[0] + 0.25 * vector_ex[1]
 
-professor_interest = text_vec("Computational Systems Biology")
+#professor_interest = text_vec("Computational Systems Biology")
 
-print(scaled_ex @ professor_interest)
+x = text_vec(["I'm interested in AI", "artifical intelligence"])  # 0.9
+print(x[0] @ x[1])
+
+# print(scaled_ex @ professor_interest)
